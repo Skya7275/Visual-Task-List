@@ -1,0 +1,140 @@
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QDialog, QListWidgetItem, QLineEdit, QDialogButtonBox
+import sys
+
+class MyWindow(QMainWindow):
+    def __init__(self):
+        super(MyWindow,self).__init__()
+        self.setGeometry(200,200,500,500)
+        self.setWindowTitle("Art")
+        self.initUI()
+
+    def initUI(self):
+        self.art_progress = QtWidgets.QLabel(self)
+        self.art_progress.setText("Art Progress")
+        self.art_progress.setGeometry(20,20,150,50)
+        self.art_progress.move(50,50)
+
+        self.progress = QtWidgets.QProgressBar(self)
+        self.progress.setGeometry(140, 60, 250, 20)
+
+        self.task_list = QtWidgets.QListWidget(self)
+        self.task_list.setGeometry(50,100,250,250)
+        self.task_list.insertItem(0,"Hello")
+
+        self.add_task_button = QtWidgets.QPushButton(self)
+        self.add_task_button.setText("Add Task")
+        self.add_task_button.move(10,5)
+        self.add_task_button.clicked.connect(self.clicked)
+
+        self.remove_task_button = QtWidgets.QPushButton(self)
+        self.remove_task_button.setText("Remove Task")
+        self.remove_task_button.move(120,5)
+        self.remove_task_button.clicked.connect(self.removing_items)
+
+        self.complete_task_button = QtWidgets.QPushButton(self)
+        self.complete_task_button.setText("Complete Task")
+        self.complete_task_button.move(230,5)
+        self.complete_task_button.clicked.connect(self.completed_task)
+
+        self.reset_clock = QtWidgets.QPushButton(self)
+        self.reset_clock.setText("Clear Completed")
+        self.reset_clock.move(340,5)
+        self.reset_clock.clicked.connect(self.resetting_list)
+
+    def resetting_list(self):
+        #if self.reset_clock.time() == (00, 00, 00, 0000):
+        total = self.task_list.count()
+        for stuff in range(total):
+            if self.task_list.item(stuff).background().color().getRgb() == (127, 201, 127, 255):
+                self.task_list.takeItem(self.task_list.row(self.task_list.item(stuff)))
+            total = self.task_list.count()
+
+
+    def completed_task(self):
+        green = '#7fc97f'
+        counter = 0
+        list_of_items = self.task_list.selectedItems()
+        current_item = self.task_list.currentItem()
+        current_item.setBackground(QtGui.QColor(green))
+        current_item.setForeground(QtGui.QColor('white'))
+        values = self.task_list.count()
+
+        color_list = []
+        for stuff in range (self.task_list.count()):
+            color_list.append(self.task_list.item(stuff).background().color().getRgb())
+
+        for c in color_list:
+            if c == (127, 201, 127, 255):
+                counter += 1
+
+        if not list_of_items:
+            return
+        else:
+            for item in range(101):
+                self.progress.setValue(int(counter/ values * 100))
+
+    def removing_items(self):
+        list_of_items = self.task_list.selectedItems()
+        counter = 0
+
+        if not list_of_items:
+            return
+        else:
+            for item in list_of_items:
+                self.task_list.takeItem(self.task_list.row(item))
+                values = self.task_list.count()
+
+        color_list = []
+        for stuff in range(self.task_list.count()):
+            color_list.append(self.task_list.item(stuff).background().color().getRgb())
+
+        for c in color_list:
+            if c == (127, 201, 127, 255):
+                counter += 1
+
+        for item in range(101):
+            self.progress.setValue(int(counter / values * 100))
+
+    def clicked(self):
+        class New_Window(QDialog):
+            def __init__(self, parent):
+                super(New_Window, self).__init__(parent=parent)
+                self.setGeometry(150, 150, 400, 300)
+                self.setWindowTitle("Add Task")
+                self.initUI()
+                self.task_list = None
+
+            def initUI(self):
+                self.new_task_label = QtWidgets.QLabel(self)
+                self.new_task_label.setText("New Task Name:")
+                self.new_task_label.setGeometry(20, 20, 180, 50)
+
+                self.task_name_input = QLineEdit(self)
+                self.task_name_input.move(50,70)
+                self.task_name_input.resize(250,20)
+
+                self.button_box = QDialogButtonBox(self)
+                self.button_box.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+                self.button_box.move(100,130)
+                self.button_box.rejected.connect(self.close)
+                self.button_box.accepted.connect(self.getting_info)
+
+                self.show()
+
+            def getting_info(self):
+                if self.task_name_input.text() == "":
+                    return
+                self.task_list.addItem(self.task_name_input.text())
+                self.close()
+
+
+        x = New_Window(parent=self)
+        x.task_list = self.task_list
+
+
+app = QApplication(sys.argv)
+window = MyWindow()
+
+window.show()
+sys.exit(app.exec_())
